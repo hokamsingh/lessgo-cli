@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-const version = "v1.0.2"
+const version = "v1.0.3"
 
 func main() {
 	// Check for the --version flag
