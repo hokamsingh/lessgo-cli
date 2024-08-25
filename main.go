@@ -1,34 +1,61 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 )
 
-func main() {
-	// Ask for the project name
-	var projectName string
-	fmt.Print("Enter project name: ")
-	fmt.Scanln(&projectName)
+const version = "v1.0.0"
 
+func main() {
+	// Check for the --version flag
+	versionFlag := flag.Bool("version", false, "Print the version number")
+	flag.Parse()
+
+	if *versionFlag {
+		fmt.Println("lessgo-cli version", version)
+		os.Exit(0)
+	}
+
+	// Handle other commands (e.g., "new")
+	if len(os.Args) < 2 {
+		fmt.Println("Expected 'new' command.")
+		os.Exit(1)
+	}
+
+	switch os.Args[1] {
+	case "new":
+		if len(os.Args) < 3 {
+			fmt.Println("Expected the name of the new project.")
+			os.Exit(1)
+		}
+		createNewProject(os.Args[2])
+	default:
+		fmt.Printf("Unknown command: %s\n", os.Args[1])
+		os.Exit(1)
+	}
+}
+
+func createNewProject(projectName string) {
 	// ASCII art for Go's logo
 	goLogo := `       *((((((((((                                                    (((*      
-    @@@@@@@@@@@@@@                                                    @@@@@@@                                       @@@@@@                  @@@@                
-   (@@@@    @@@@@@                                                       @@@@/                                 @@@@@@@@@@@@@@@@      @@@@@@@@@@@@@@@@           
-   *@@@@    @@@@@@        @@@@@@           @@@@@@@        @@@@@@@        @@@@,                              @@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@@         
-    @@@@    @@@@@@    *@@@@@@@@@@@/     &@@@@@@@@@@@&   @@@@@@@@@@@@&    @@@@                              @@@@@@@        @@@    @@@@@@@@        @@@@@@@        
-    @@@@    @@@@@@  ,@@@@@@   /@@@@@   @@@@@&   (@@/   @@@@@%   (@@/     @@@@                             @@@@@@@    @@@@@@@@@@@@@@@@@@           @@@@@@@       
-./@@@@@@    @@@@@@ ,@@@@@       @@@@@  @@@@@@.         @@@@@@            @@@@@@(                 @@@@@@@  @@@@@@@    @@@@@@@@@@@@@@@@@@            @@@@@@@       
-(@@@@@@     @@@@@@ @@@@@@@@@@@@@@@@@@   /@@@@@@@@@@     (@@@@@@@@@@       @@@@@@                           @@@@@@@         @@@@@@@@@@@@@          @@@@@@@        
-   *@@@@    @@@@@@ /@@@@@                    &@@@@@@@        &@@@@@@@    @@@@,                            @@@@@@@@@*   @@@@@@@@& @@@@@@@@@   /@@@@@@@@@         
-    @@@@    @@@@@@  @@@@@@#       ,     @.      @@@@@   @.      @@@@@    @@@@                               @@@@@@@@@@@@@@@@@@    @@@@@@@@@@@@@@@@@@@           
-   .@@@@    ,@@@@@@@  @@@@@@@@@@@@@@  @@@@@@@@@@@@@@% @@@@@@@@@@@@@@(    @@@@                                  @@@@@@@@@@@           @@@@@@@@@@@@               
-   (@@@@      .@@@@@.    .&@@@@@*        #@@@@@@@(       %@@@@@@@/       @@@@/  
-    @@@@@                                                               &@@@@   
-     @@@@@@                                                           @@@@@@    
-`
+		@@@@@@@@@@@@@@                                                    @@@@@@@                                       @@@@@@                  @@@@                
+	   (@@@@    @@@@@@                                                       @@@@/                                 @@@@@@@@@@@@@@@@      @@@@@@@@@@@@@@@@           
+	   *@@@@    @@@@@@        @@@@@@           @@@@@@@        @@@@@@@        @@@@,                              @@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@@         
+		@@@@    @@@@@@    *@@@@@@@@@@@/     &@@@@@@@@@@@&   @@@@@@@@@@@@&    @@@@                              @@@@@@@        @@@    @@@@@@@@        @@@@@@@        
+		@@@@    @@@@@@  ,@@@@@@   /@@@@@   @@@@@&   (@@/   @@@@@%   (@@/     @@@@                             @@@@@@@    @@@@@@@@@@@@@@@@@@           @@@@@@@       
+	./@@@@@@    @@@@@@ ,@@@@@       @@@@@  @@@@@@.         @@@@@@            @@@@@@(                 @@@@@@@  @@@@@@@    @@@@@@@@@@@@@@@@@@            @@@@@@@       
+	(@@@@@@     @@@@@@ @@@@@@@@@@@@@@@@@@   /@@@@@@@@@@     (@@@@@@@@@@       @@@@@@                           @@@@@@@         @@@@@@@@@@@@@          @@@@@@@        
+	   *@@@@    @@@@@@ /@@@@@                    &@@@@@@@        &@@@@@@@    @@@@,                            @@@@@@@@@*   @@@@@@@@& @@@@@@@@@   /@@@@@@@@@         
+		@@@@    @@@@@@  @@@@@@#       ,     @.      @@@@@   @.      @@@@@    @@@@                               @@@@@@@@@@@@@@@@@@    @@@@@@@@@@@@@@@@@@@           
+	   .@@@@    ,@@@@@@@  @@@@@@@@@@@@@@  @@@@@@@@@@@@@@% @@@@@@@@@@@@@@(    @@@@                                  @@@@@@@@@@@           @@@@@@@@@@@@               
+	   (@@@@      .@@@@@.    .&@@@@@*        #@@@@@@@(       %@@@@@@@/       @@@@/  
+		@@@@@                                                               &@@@@   
+		 @@@@@@                                                           @@@@@@    
+	`
 	fmt.Println(goLogo)
 	fmt.Printf("🚀 Initializing your Less%s project...\n\n", projectName)
 
@@ -48,71 +75,71 @@ func main() {
 
 	// Dynamically create the content of main.go using the project name
 	mainGoContent := fmt.Sprintf(`package main
-
-import (
-	%s "%s/app/src"
-	"log"
-	"time"
-
-	LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
-)
-
-func main() {
-	// Load Configuration
-	cfg := LessGo.LoadConfig()
-	// CORS Options
-	corsOptions := LessGo.NewCorsOptions(
-		[]string{"*"}, 
-		[]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, 
-		[]string{"Content-Type", "Authorization"}, 
+	
+	import (
+		%s "%s/app/src"
+		"log"
+		"time"
+	
+		LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
 	)
-
-	// Initialize App
-	App := LessGo.App(
-		LessGo.WithCORS(*corsOptions),
-		LessGo.WithRateLimiter(100, 1*time.Minute),
-		LessGo.WithJSONParser(),
-		LessGo.WithCookieParser(),
-	)
-
-	// Serve Static Files
-	folderPath, err := LessGo.GetFolderPath("uploads")
-	if err != nil {
-		log.Fatalf("Error: %%v", err)
+	
+	func main() {
+		// Load Configuration
+		cfg := LessGo.LoadConfig()
+		// CORS Options
+		corsOptions := LessGo.NewCorsOptions(
+			[]string{"*"}, 
+			[]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, 
+			[]string{"Content-Type", "Authorization"}, 
+		)
+	
+		// Initialize App
+		App := LessGo.App(
+			LessGo.WithCORS(*corsOptions),
+			LessGo.WithRateLimiter(100, 1*time.Minute),
+			LessGo.WithJSONParser(),
+			LessGo.WithCookieParser(),
+		)
+	
+		// Serve Static Files
+		folderPath, err := LessGo.GetFolderPath("uploads")
+		if err != nil {
+			log.Fatalf("Error: %%v", err)
+		}
+		App.ServeStatic("/static/", folderPath)
+	
+		// Dependency Injection Container
+		container := LessGo.NewContainer()
+	
+		// Register Services
+		if err := container.Register(%s.NewRootService); err != nil {
+			log.Fatalf("Error registering RootService: %%v", err)
+		}
+	
+		// Register Modules
+		if err := container.Register(%s.NewRootModule); err != nil {
+			log.Fatalf("Error registering UserModule: %%v", err)
+		}
+	
+		// Root Module
+		rootModule := %s.NewRootModule(App)
+		LessGo.RegisterModules(App, []LessGo.IModule{rootModule})
+	
+		// Example Route
+		App.Get("/ping", func(ctx *LessGo.Context) {
+			ctx.Send("pong")
+		})
+	
+		// Start the server
+		serverPort := cfg.Get("SERVER_PORT", "8080")
+		env := cfg.Get("ENV", "development")
+		log.Printf("Starting server on port %%s in %%s mode", serverPort, env)
+		if err := App.Listen(":" + serverPort); err != nil {
+			log.Fatalf("Server failed: %%v", err)
+		}
 	}
-	App.ServeStatic("/static/", folderPath)
-
-	// Dependency Injection Container
-	container := LessGo.NewContainer()
-
-	// Register Services
-	if err := container.Register(%s.NewRootService); err != nil {
-		log.Fatalf("Error registering RootService: %%v", err)
-	}
-
-	// Register Modules
-	if err := container.Register(%s.NewRootModule); err != nil {
-		log.Fatalf("Error registering UserModule: %%v", err)
-	}
-
-	// Root Module
-	rootModule := %s.NewRootModule(App)
-	LessGo.RegisterModules(App, []LessGo.IModule{rootModule})
-
-	// Example Route
-	App.Get("/ping", func(ctx *LessGo.Context) {
-		ctx.Send("pong")
-	})
-
-	// Start the server
-	serverPort := cfg.Get("SERVER_PORT", "8080")
-	env := cfg.Get("ENV", "development")
-	log.Printf("Starting server on port %%s in %%s mode", serverPort, env)
-	if err := App.Listen(":" + serverPort); err != nil {
-		log.Fatalf("Server failed: %%v", err)
-	}
-}
-`, projectName, projectName, projectName, projectName, projectName)
+	`, projectName, projectName, projectName, projectName, projectName)
 
 	// Create and write to main.go
 	mainGoPath := filepath.Join(projectDir, "app", "cmd", "main.go")
@@ -138,62 +165,62 @@ func main() {
 
 	// Dynamically create the content of src files using the project name
 	controllerContent := fmt.Sprintf(`package %s
-
-import LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
-
-type RootController struct {
-	LessGo.BaseController
-	Path    string
-	Service RootService
-}
-
-func NewRootController(s *RootService, path string) *RootController {
-	return &RootController{
-		Path:    path,
-		Service: *s,
+	
+	import LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
+	
+	type RootController struct {
+		LessGo.BaseController
+		Path    string
+		Service RootService
 	}
-}
-
-func (rc *RootController) RegisterRoutes(r *LessGo.Router) {
-	// r.Get("/hello", func(ctx *LessGo.Context) {
-	// 	ctx.Send("Hello world")
-	// })
-}
-`, projectName)
+	
+	func NewRootController(s *RootService, path string) *RootController {
+		return &RootController{
+			Path:    path,
+			Service: *s,
+		}
+	}
+	
+	func (rc *RootController) RegisterRoutes(r *LessGo.Router) {
+		// r.Get("/hello", func(ctx *LessGo.Context) {
+		// 	ctx.Send("Hello world")
+		// })
+	}
+	`, projectName)
 
 	moduleContent := fmt.Sprintf(`package %s
-
-import (
-	LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
-)
-
-type RootModule struct {
-	LessGo.Module
-}
-
-func NewRootModule(r *LessGo.Router) *RootModule {
-	modules := []LessGo.IModule{}
-	LessGo.RegisterModules(r, modules)
-	service := NewRootService()
-	controller := NewRootController(service, "/")
-	return &RootModule{
-		Module: *LessGo.NewModule("Root", []interface{}{controller}, []interface{}{service}, modules),
+	
+	import (
+		LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
+	)
+	
+	type RootModule struct {
+		LessGo.Module
 	}
-}
-`, projectName)
+	
+	func NewRootModule(r *LessGo.Router) *RootModule {
+		modules := []LessGo.IModule{}
+		LessGo.RegisterModules(r, modules)
+		service := NewRootService()
+		controller := NewRootController(service, "/")
+		return &RootModule{
+			Module: *LessGo.NewModule("Root", []interface{}{controller}, []interface{}{service}, modules),
+		}
+	}
+	`, projectName)
 
 	serviceContent := fmt.Sprintf(`package %s
-
-type IRootService interface{}
-
-type RootService struct {
-	// Add any shared dependencies or methods here
-}
-
-func NewRootService() *RootService {
-	return &RootService{}
-}
-`, projectName)
+	
+	type IRootService interface{}
+	
+	type RootService struct {
+		// Add any shared dependencies or methods here
+	}
+	
+	func NewRootService() *RootService {
+		return &RootService{}
+	}
+	`, projectName)
 
 	// File contents for src files
 	rootContents := []string{controllerContent, moduleContent, serviceContent}
