@@ -3,7 +3,7 @@
 # LessGo CLI
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/hokamsingh/lessgo-cli)](https://golang.org/dl/)
-![Version](https://img.shields.io/badge/version-v1.0.3-blue)
+![Version](https://img.shields.io/badge/version-v1.0.4-blue)
 
 `lessgo-cli` is a command-line tool designed to scaffold and manage projects using the [LessGo](https://github.com/hokamsingh/lessgo) framework. It simplifies the process of setting up a new project with pre-defined directory structures, boilerplate code, and configurations.
 
@@ -33,6 +33,34 @@ For Windows users, you can add the GOPATH to your system’s PATH as follows:
 3. Under "System variables," find the `Path` variable and click "Edit."
 4. Add a new entry with `$(go env GOPATH)\bin`.
 5. Click "OK" to save and apply the changes.
+
+### Linux Users
+
+For Linux users, ensure that your `GOPATH` binaries directory (usually `~/go/bin`) is included in your system's `PATH`. Follow these steps:
+
+1. Open your terminal.
+2. Edit your shell configuration file (`~/.bashrc`, `~/.zshrc`, etc.) with your favorite text editor:
+   ```bash
+   nano ~/.bashrc
+   ```
+   or
+   ```bash
+   nano ~/.zshrc
+   ```
+3. Add the following line at the end of the file:
+   ```bash
+   export PATH=$PATH:$(go env GOPATH)/bin
+   ```
+4. Save the file and exit the editor.
+5. Reload your shell configuration:
+   ```bash
+   source ~/.bashrc
+   ```
+   or
+   ```bash
+   source ~/.zshrc
+   ```
+6. Now you should be able to run `lessgo-cli` from anywhere in your terminal.
 
 ## Usage
 
