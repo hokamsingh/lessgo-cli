@@ -91,7 +91,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you have any questions or feedback, feel free to reach out:
 
 - **GitHub**: [hokamsingh/lessgo-cli](https://github.com/hokamsingh/lessgo-cli)
-- **Email**: hokamsingh@example.com (replace with your actual email)
+- **Email**: hokamsingh07@gmail.com
 
 ---
 
