@@ -28,20 +28,13 @@ func main() {
 
 	switch os.Args[1] {
 	case "new":
-		if len(os.Args) < 3 {
-			fmt.Println("Expected the name of the new project.")
-			os.Exit(1)
-		}
-		createNewProject(os.Args[2])
-	default:
-		fmt.Printf("Unknown command: %s\n", os.Args[1])
-		os.Exit(1)
-	}
-}
+		// Ask for the project name
+		var projectName string
+		fmt.Print("Enter project name: ")
+		fmt.Scanln(&projectName)
 
-func createNewProject(projectName string) {
-	// ASCII art for Go's logo
-	goLogo := `       *((((((((((                                                    (((*      
+		// ASCII art for Go's logo
+		goLogo := `       *((((((((((                                                    (((*      
 		@@@@@@@@@@@@@@                                                    @@@@@@@                                       @@@@@@                  @@@@                
 	   (@@@@    @@@@@@                                                       @@@@/                                 @@@@@@@@@@@@@@@@      @@@@@@@@@@@@@@@@           
 	   *@@@@    @@@@@@        @@@@@@           @@@@@@@        @@@@@@@        @@@@,                              @@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@@         
@@ -56,25 +49,25 @@ func createNewProject(projectName string) {
 		@@@@@                                                               &@@@@   
 		 @@@@@@                                                           @@@@@@    
 	`
-	fmt.Println(goLogo)
-	fmt.Printf("🚀 Initializing your Less%s project...\n\n", projectName)
+		fmt.Println(goLogo)
+		fmt.Printf("🚀 Initializing your Less%s project...\n\n", projectName)
 
-	// Create project directory structure
-	projectDir := filepath.Join(".", projectName)
-	err := os.MkdirAll(filepath.Join(projectDir, "app", "cmd"), os.ModePerm)
-	if err != nil {
-		fmt.Println("❌ Error creating project directories:", err)
-		return
-	}
+		// Create project directory structure
+		projectDir := filepath.Join(".", projectName)
+		err := os.MkdirAll(filepath.Join(projectDir, "app", "cmd"), os.ModePerm)
+		if err != nil {
+			fmt.Println("❌ Error creating project directories:", err)
+			return
+		}
 
-	// Verify the creation of the directory
-	if _, err := os.Stat(filepath.Join(projectDir, "app", "cmd")); os.IsNotExist(err) {
-		fmt.Println("❌ Failed to create the app/cmd directory.")
-		return
-	}
+		// Verify the creation of the directory
+		if _, err := os.Stat(filepath.Join(projectDir, "app", "cmd")); os.IsNotExist(err) {
+			fmt.Println("❌ Failed to create the app/cmd directory.")
+			return
+		}
 
-	// Dynamically create the content of main.go using the project name
-	mainGoContent := fmt.Sprintf(`package main
+		// Dynamically create the content of main.go using the project name
+		mainGoContent := fmt.Sprintf(`package main
 	
 	import (
 		%s "%s/app/src"
@@ -137,30 +130,30 @@ func createNewProject(projectName string) {
 	}
 	`, projectName, projectName, projectName)
 
-	// Create and write to main.go
-	mainGoPath := filepath.Join(projectDir, "app", "cmd", "main.go")
-	err = os.WriteFile(mainGoPath, []byte(mainGoContent), os.ModePerm)
-	if err != nil {
-		fmt.Println("❌ Error creating main.go:", err)
-		return
-	}
+		// Create and write to main.go
+		mainGoPath := filepath.Join(projectDir, "app", "cmd", "main.go")
+		err = os.WriteFile(mainGoPath, []byte(mainGoContent), os.ModePerm)
+		if err != nil {
+			fmt.Println("❌ Error creating main.go:", err)
+			return
+		}
 
-	// Create src directory
-	srcDir := filepath.Join(projectDir, "app", "src")
-	err = os.MkdirAll(srcDir, os.ModePerm)
-	if err != nil {
-		fmt.Println("❌ Error creating src directory:", err)
-		return
-	}
+		// Create src directory
+		srcDir := filepath.Join(projectDir, "app", "src")
+		err = os.MkdirAll(srcDir, os.ModePerm)
+		if err != nil {
+			fmt.Println("❌ Error creating src directory:", err)
+			return
+		}
 
-	// Verify the creation of the src directory
-	if _, err := os.Stat(srcDir); os.IsNotExist(err) {
-		fmt.Println("❌ Failed to create the app/src directory.")
-		return
-	}
+		// Verify the creation of the src directory
+		if _, err := os.Stat(srcDir); os.IsNotExist(err) {
+			fmt.Println("❌ Failed to create the app/src directory.")
+			return
+		}
 
-	// Dynamically create the content of src files using the project name
-	controllerContent := fmt.Sprintf(`package %s
+		// Dynamically create the content of src files using the project name
+		controllerContent := fmt.Sprintf(`package %s
 	
 	import LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
 	
@@ -183,7 +176,7 @@ func createNewProject(projectName string) {
 	}
 	`, projectName)
 
-	moduleContent := fmt.Sprintf(`package %s
+		moduleContent := fmt.Sprintf(`package %s
 	
 	import (
 		LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
@@ -204,7 +197,7 @@ func createNewProject(projectName string) {
 	}
 	`, projectName)
 
-	serviceContent := fmt.Sprintf(`package %s
+		serviceContent := fmt.Sprintf(`package %s
 	
 	type IRootService interface{}
 	
@@ -217,38 +210,42 @@ func createNewProject(projectName string) {
 	}
 	`, projectName)
 
-	// File contents for src files
-	rootContents := []string{controllerContent, moduleContent, serviceContent}
+		// File contents for src files
+		rootContents := []string{controllerContent, moduleContent, serviceContent}
 
-	// Create src files in app/src directory
-	srcFiles := []string{"app_controller.go", "app_module.go", "app_service.go"}
-	for i, file := range srcFiles {
-		filePath := filepath.Join(srcDir, file)
-		content := rootContents[i]
-		err = os.WriteFile(filePath, []byte(content), os.ModePerm)
+		// Create src files in app/src directory
+		srcFiles := []string{"app_controller.go", "app_module.go", "app_service.go"}
+		for i, file := range srcFiles {
+			filePath := filepath.Join(srcDir, file)
+			content := rootContents[i]
+			err = os.WriteFile(filePath, []byte(content), os.ModePerm)
+			if err != nil {
+				fmt.Println("❌ Error creating", file, ":", err)
+				return
+			}
+		}
+
+		// Initialize go.mod
+		cmd := exec.Command("go", "mod", "init", projectName)
+		cmd.Dir = projectDir
+		err = cmd.Run()
 		if err != nil {
-			fmt.Println("❌ Error creating", file, ":", err)
+			fmt.Println("❌ Error initializing go.mod:", err)
 			return
 		}
-	}
 
-	// Initialize go.mod
-	cmd := exec.Command("go", "mod", "init", projectName)
-	cmd.Dir = projectDir
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println("❌ Error initializing go.mod:", err)
-		return
-	}
+		cmd = exec.Command("go", "mod", "tidy")
+		cmd.Dir = projectDir
+		err = cmd.Run()
+		if err != nil {
+			fmt.Println("❌ Error running go mod tidy:", err)
+			return
+		}
 
-	cmd = exec.Command("go", "mod", "tidy")
-	cmd.Dir = projectDir
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println("❌ Error running go mod tidy:", err)
-		return
+		fmt.Println("🎉 Project scaffold created successfully!")
+		fmt.Printf("🚀 Spin up your new LessGo app by running: go run %s/app/cmd/main.go\n", projectName)
+	default:
+		fmt.Printf("Unknown command: %s\n", os.Args[1])
+		os.Exit(1)
 	}
-
-	fmt.Println("🎉 Project scaffold created successfully!")
-	fmt.Printf("🚀 Spin up your new LessGo app by running: go run %s/app/cmd/main.go\n", projectName)
 }
