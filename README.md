@@ -1,5 +1,3 @@
-Here's a README for your CLI tool, `lessgo-cli` version v1.0.3:
-
 ---
 
 # LessGo CLI
@@ -94,5 +92,3 @@ If you have any questions or feedback, feel free to reach out:
 - **Email**: hokamsingh07@gmail.com
 
 ---
-
-This README should give users a clear understanding of how to install, use, and contribute to the `lessgo-cli`. If there are any other features or details you'd like to include, let me know!
