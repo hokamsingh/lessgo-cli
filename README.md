@@ -3,7 +3,7 @@
 # LessGo CLI
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/hokamsingh/lessgo-cli)](https://golang.org/dl/)
-![Version](https://img.shields.io/badge/version-v1.0.4-blue)
+![Version](https://img.shields.io/badge/version-v1.0.5-blue)
 
 `lessgo-cli` is a command-line tool designed to scaffold and manage projects using the [LessGo](https://github.com/hokamsingh/lessgo) framework. It simplifies the process of setting up a new project with pre-defined directory structures, boilerplate code, and configurations.
 
