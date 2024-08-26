@@ -87,19 +87,26 @@ func createNewProject(projectName string) {
 	func main() {
 		// Load Configuration
 		cfg := LessGo.LoadConfig()
+		serverPort := cfg.Get("SERVER_PORT", "8080")
+		env := cfg.Get("ENV", "development")
+
 		// CORS Options
 		corsOptions := LessGo.NewCorsOptions(
 			[]string{"*"}, 
 			[]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, 
 			[]string{"Content-Type", "Authorization"}, 
 		)
+		// parser options
+		size, _ := LessGo.ConvertToBytes(int64(1024), LessGo.Kilobytes)
+		parserOptions := LessGo.NewParserOptions(size)
 	
 		// Initialize App
 		App := LessGo.App(
-			LessGo.WithCORS(*corsOptions),
-			LessGo.WithRateLimiter(100, 1*time.Minute),
-			LessGo.WithJSONParser(),
-			LessGo.WithCookieParser(),
+		LessGo.WithCORS(*corsOptions),
+		LessGo.WithRateLimiter(100, 1*time.Minute),
+		LessGo.WithJSONParser(*parserOptions),
+		LessGo.WithCookieParser(),
+		// LessGo.WithFileUpload("uploads"),
 		)
 	
 		// Serve Static Files
@@ -109,18 +116,9 @@ func createNewProject(projectName string) {
 		}
 		App.ServeStatic("/static/", folderPath)
 	
-		// Dependency Injection Container
-		container := LessGo.NewContainer()
-	
-		// Register Services
-		if err := container.Register(%s.NewRootService); err != nil {
-			log.Fatalf("Error registering RootService: %%v", err)
-		}
-	
-		// Register Modules
-		if err := container.Register(%s.NewRootModule); err != nil {
-			log.Fatalf("Error registering UserModule: %%v", err)
-		}
+		// Register dependencies
+		dependencies := []interface{}{src.NewRootService, src.NewRootModule}
+		LessGo.RegisterDependencies(dependencies)
 	
 		// Root Module
 		rootModule := %s.NewRootModule(App)
@@ -132,14 +130,12 @@ func createNewProject(projectName string) {
 		})
 	
 		// Start the server
-		serverPort := cfg.Get("SERVER_PORT", "8080")
-		env := cfg.Get("ENV", "development")
 		log.Printf("Starting server on port %%s in %%s mode", serverPort, env)
 		if err := App.Listen(":" + serverPort); err != nil {
 			log.Fatalf("Server failed: %%v", err)
 		}
 	}
-	`, projectName, projectName, projectName, projectName, projectName)
+	`, projectName, projectName, projectName)
 
 	// Create and write to main.go
 	mainGoPath := filepath.Join(projectDir, "app", "cmd", "main.go")
@@ -169,7 +165,6 @@ func createNewProject(projectName string) {
 	import LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
 	
 	type RootController struct {
-		LessGo.BaseController
 		Path    string
 		Service RootService
 	}
