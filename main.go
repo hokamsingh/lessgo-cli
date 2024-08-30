@@ -3,12 +3,31 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
-const version = "v1.0.6"
+const version = "v1.0.7"
+
+func GetParentDir() string {
+	// Get the current working directory
+	p, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Error getting working directory: %v", err)
+	}
+	// Convert backslashes to forward slashes
+	p = strings.ReplaceAll(p, "\\", "/")
+	// Split the path into components
+	parts := strings.Split(p, "/")
+	// Return the last component if available
+	if len(parts) > 0 {
+		return parts[len(parts)-1]
+	}
+	return ""
+}
 
 func main() {
 	// Check for the --version flag
@@ -54,6 +73,7 @@ func main() {
 
 		// Create project directory structure
 		projectDir := filepath.Join(".", projectName)
+		os.MkdirAll(filepath.Join(projectDir, "uploads"), os.ModePerm)
 		err := os.MkdirAll(filepath.Join(projectDir, "app", "cmd"), os.ModePerm)
 		if err != nil {
 			fmt.Println("❌ Error creating project directories:", err)
@@ -65,12 +85,10 @@ func main() {
 			fmt.Println("❌ Failed to create the app/cmd directory.")
 			return
 		}
-
-		// Dynamically create the content of main.go using the project name
 		mainGoContent := fmt.Sprintf(`package main
 
 import (
-	%s "%s/app/src"
+	src "%s/app/src"
 	"log"
 	"time"
 
@@ -128,7 +146,7 @@ func main() {
 		log.Fatalf("Server failed: %%v", err)
 	}
 }
-`, projectName, projectName)
+`, projectName)
 
 		envContent := `SERVER_PORT =9004
 					   ENV=development
@@ -322,8 +340,9 @@ help:
 			fmt.Println("❌ Error creating main.go:", err)
 			return
 		}
+		rootFiles := []string{".env", "Makefile", ".air.toml", "docker-compose.yml", "Dockerfile"}
 		rContents := []string{envContent, makefileContent, dotAirDotYml, dockerComposeContent, dockerfileContent}
-		for i, file := range rContents {
+		for i, file := range rootFiles {
 			filePath := filepath.Join(projectDir, file)
 			content := rContents[i]
 			err = os.WriteFile(filePath, []byte(content), os.ModePerm)
@@ -348,7 +367,7 @@ help:
 		}
 
 		// Dynamically create the content of src files using the project name
-		controllerContent := fmt.Sprintf(`package %s
+		controllerContent := `package src
 
 import LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
 
@@ -370,9 +389,9 @@ func (rc *RootController) RegisterRoutes(r *LessGo.Router) {
 	// 	ctx.Send("Hello world")
 	// })
 }
-`, projectName)
+`
 
-		moduleContent := fmt.Sprintf(`package %s
+		moduleContent := `package src
 
 import (
 	LessGo "github.com/hokamsingh/lessgo/pkg/lessgo"
@@ -391,9 +410,9 @@ func NewRootModule(r *LessGo.Router) *RootModule {
 		Module: *LessGo.NewModule("Root", []interface{}{controller}, []interface{}{service}, modules),
 	}
 }
-`, projectName)
+`
 
-		serviceContent := fmt.Sprintf(`package %s
+		serviceContent := `package src
 
 type IRootService interface{}
 
@@ -404,7 +423,7 @@ type RootService struct {
 func NewRootService() *RootService {
 	return &RootService{}
 }
-`, projectName)
+`
 
 		// File contents for src files
 		rootContents := []string{controllerContent, moduleContent, serviceContent}
@@ -439,7 +458,7 @@ func NewRootService() *RootService {
 		}
 
 		fmt.Println("🎉 Project scaffold created successfully!")
-		fmt.Printf("🚀 Spin up your new LessGo app by running: go run %s/app/cmd/main.go\n", projectName)
+		fmt.Printf("🚀 Spin up your new LessGo app by running: cd %s && go run app/cmd/main.go\n", projectName)
 	default:
 		fmt.Printf("Unknown command: %s\n", os.Args[1])
 		os.Exit(1)
