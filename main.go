@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const version = "v1.0.8"
+const version = "v2.0.1"
 
 func GetParentDir() string {
 	// Get the current working directory
